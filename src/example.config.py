@@ -7,18 +7,18 @@ Copy this file to config.py and update the settings
 # encoding: utf-8
 
 '''
-Get your API key
-Start by retrieving your API Key from the "Security" section in new Account admin panel to be able to make authenticated requests to the API.
-https://account.gandi.net/
+Get your Personal Access Token (PAT)
+PAT must be recreated using the Organization Admin application.
+https://admin.gandi.net/organizations/account/pat
 '''
 api_secret = '---my_secret_API_KEY----'
 
 '''
 Gandiv5 LiveDNS API Location
-http://doc.livedns.gandi.net/#api-endpoint
-https://dns.api.gandi.net/api/v5/
+https://api.gandi.net/docs/
+https://api.gandi.net/v5/
 '''
-api_endpoint = 'https://dns.api.gandi.net/api/v5'
+api_endpoint = 'https://api.gandi.net/v5'
 
 #your domain with the subdomains in the zone file/UUID 
 domain = 'mydomain.tld'
