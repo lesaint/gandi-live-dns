@@ -17,12 +17,24 @@ import config
 import argparse
 
 
+def _read_json(u):
+    try:
+        return u.json()
+    except requests.exceptions.JSONDecodeError:
+        print(
+            'Error: HTTP Status Code', u.status_code,
+            'when trying to get IP from subdomain', config.subdomains[0],
+            'response', u.text,
+        )
+        exit(1)
+
+
 def get_dynip(ifconfig_provider):
     ''' find out own IPv4 at home <-- this is the dynamic IP which changes more or less frequently
     similar to curl ifconfig.me/ip, see example.config.py for details to ifconfig providers 
     ''' 
     r = requests.get(ifconfig_provider)
-    ip = r.content.decode('ascii').strip('\n')
+    ip = r.text.strip('\n')
     print('Checking dynamic IP: ' , ip)
     return ip
 
@@ -39,7 +51,7 @@ def get_dnsip():
     url = config.api_endpoint + '/livedns/domains/' + config.domain + '/records/' + config.subdomains[0] + '/A'
     headers = {"Authorization": "Bearer " + config.api_secret}
     u = requests.get(url, headers=headers)
-    json_object = json.loads(u._content)
+    json_object = _read_json(u)
 
     if u.status_code == 200:
         dnsip = json_object['rrset_values'][0]
@@ -47,9 +59,9 @@ def get_dnsip():
         return dnsip
     else:
         print(
-            'Error: HTTP Status Code ', u.status_code,
+            'Error: HTTP Status Code', u.status_code,
             'when trying to get IP from subdomain', config.subdomains[0],
-            "message:", json_object['message'],
+            'message/response', json_object['message'] if json_object.get('message') else u.text,
         )
         exit()
 
@@ -68,7 +80,7 @@ def update_records(dynIP, subdomain):
     payload = {"rrset_ttl": config.ttl, "rrset_values": [dynIP]}
     headers = {"Content-Type": "application/json", "Authorization": "Bearer " + config.api_secret}
     u = requests.put(url, data=json.dumps(payload), headers=headers)
-    json_object = json.loads(u._content)
+    json_object = _read_json(u)
 
     if u.status_code == 201:
         print('Status Code:', u.status_code, ',', json_object['message'], ', IP updated for', subdomain)
@@ -77,7 +89,7 @@ def update_records(dynIP, subdomain):
         print(
             'Error: HTTP Status Code ', u.status_code,
             'when trying to update IP from subdomain', subdomain,
-            'message', json_object['message'],
+            'message/response', json_object['message'] if json_object.get('message') else u.text,
         )
         exit()
 
